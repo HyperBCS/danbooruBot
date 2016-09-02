@@ -5,7 +5,7 @@ Simple bot for danbooru requests.
 TwitterAPI which can be installed using 'pip install TwitterAPI'
 
 # Usage
-Enter your keys in config, and run. The commands are
+Enter your keys in config, and run. The commands are<br />
 !choose \<option1, options2, etc.\><br />
 !pic \<tag1, tag2, etc..\>
 
