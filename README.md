@@ -1,5 +1,5 @@
 # danbooruBot
-Simple bot for danbooru requests.
+Simple bot that returns pictures related to idolmaster
 
 # Requirements
 TwitterAPI which can be installed using 'pip install TwitterAPI'
