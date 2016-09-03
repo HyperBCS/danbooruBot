@@ -118,12 +118,12 @@ while True:
                 except:
                     print(time.strftime("[%x %X] ")+"Invalid request: "+status['text'].encode('utf-8'))
                     continue
-                # try:
-                if choices[0].lower() == "!pic" or choices[0].lower() == "!reroll":
-                    pic_opt(choices, status, names)
-                # except:
-                #     print(time.strftime("[%x %X] ")+"An error occured or there are no pictures found...")
-                #     r = api.request('statuses/update', {'status':"@"+str(status['user']['screen_name'])+" No pictures found.", 'in_reply_to_status_id':status['id_str']})
+                try:
+                    if choices[0].lower() == "!pic" or choices[0].lower() == "!reroll":
+                        pic_opt(choices, status, names)
+                except:
+                    print(time.strftime("[%x %X] ")+"An error occured or there are no pictures found...")
+                    r = api.request('statuses/update', {'status':"@"+str(status['user']['screen_name'])+" No pictures found.", 'in_reply_to_status_id':status['id_str']})
             elif 'disconnect' in status:
                 event = status['disconnect']
                 if event['code'] in [2,5,6,7]:
