@@ -19,6 +19,17 @@ except:
 
 api = TwitterAPI(twitter['consumer_key'], twitter['consumer_secret'], twitter['access_token_key'], twitter['access_token_secret'])
 
+def trim(user, name, imgL):
+    fin = ""
+    count = 0
+    while True:
+        if len(fin) == (90 - len(user)) or fin == name:
+            break
+        fin = fin + name[count]
+        count = count+1
+    return "@"+user+fin+" "+imgL
+
+
 def choose_opt(choices, status):
     del choices[0]
     if len(choices) != 0:
@@ -28,7 +39,9 @@ def choose_opt(choices, status):
         length = len(choices)
         choice = choices[random.randint(0, length-1)]
         print(time.strftime("[%x %X] ")+"Reply: "+str(choice))
-        r = api.request('statuses/update', {'status':"@"+str(status['user']['screen_name'])+" I suggest you "+choice, 'in_reply_to_status_id': status['id_str']})
+        fin_status = "@"+str(status['user']['screen_name'])+" I suggest you "+choice
+        r = api.request('statuses/update', {'status':fin_status[:140], 'in_reply_to_status_id': status['id_str']})
+        print(time.strftime("[%x %X] ")+"Successfully tweeted reply!")
 
 def pic_opt(choices, status, names):
     reroll = False
@@ -49,7 +62,7 @@ def pic_opt(choices, status, names):
         for dec in made:
             if count == 4:
                 break
-            randURL += "+"+dec.replace(" ","_")
+            randURL += "+"+urllib.quote(dec.replace(" ","_"))
     else:
         randURL = 'https://danbooru.donmai.us/posts/random?tags=idolmaster'
     count = 20
@@ -79,11 +92,13 @@ def pic_opt(choices, status, names):
     imgL = "https://danbooru.donmai.us/posts/"+src
     file = urllib.urlopen(img)
     data = file.read()
+    fin_status = trim(str(status['user']['screen_name']),name,imgL)
     r = api.request('media/upload', None, {'media': data})
     if r.status_code == 200:
         media_id = r.json()['media_id']
         r = api.request(
-            'statuses/update', {'status':"@"+str(status['user']['screen_name'])+name+" "+imgL, 'media_ids': media_id, 'in_reply_to_status_id':status['id_str']})
+            'statuses/update', {'status':fin_status, 'media_ids': media_id, 'in_reply_to_status_id':status['id_str']})
+        print(time.strftime("[%x %X] ")+"Successfully tweeted reply!")
     else:
         print(time.strftime("[%x %X] ")+"An error occured while uploading media...")
 
@@ -103,12 +118,12 @@ while True:
                 except:
                     print(time.strftime("[%x %X] ")+"Invalid request: "+status['text'].encode('utf-8'))
                     continue
-                try:
-                    if choices[0].lower() == "!pic" or choices[0].lower() == "!reroll":
-                        pic_opt(choices, status, names)
-                except:
-                    print(time.strftime("[%x %X] ")+"An error occured or there are no pictures found...")
-                    r = api.request('statuses/update', {'status':"@"+str(status['user']['screen_name'])+" No pictures found.", 'in_reply_to_status_id':status['id_str']})
+                # try:
+                if choices[0].lower() == "!pic" or choices[0].lower() == "!reroll":
+                    pic_opt(choices, status, names)
+                # except:
+                #     print(time.strftime("[%x %X] ")+"An error occured or there are no pictures found...")
+                #     r = api.request('statuses/update', {'status':"@"+str(status['user']['screen_name'])+" No pictures found.", 'in_reply_to_status_id':status['id_str']})
             elif 'disconnect' in status:
                 event = status['disconnect']
                 if event['code'] in [2,5,6,7]:
