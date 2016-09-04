@@ -29,6 +29,16 @@ def trim(user, name, imgL):
         count = count+1
     return "@"+user+fin+" "+imgL
 
+def series(word):
+    if word == '-k':
+        return 'kancolle'
+    elif word == '-i':
+        return 'idolmaster'
+    elif word == '-t':
+        return 'touhou'
+    else:
+        return None
+
 
 def choose_opt(choices, status):
     del choices[0]
@@ -56,15 +66,23 @@ def pic_opt(choices, status, names):
         del choices[0]
     if len(choices) != 0:
         made = [x.strip() for x in choices[0].split(',')]
+
+        arg = re.compile(r'-[k-ki-it-t] ')
+        if arg.search(made[0].lower()):
+            ans = series(made[0][0:2])
+            if ans != None:
+                made[0] = made[0][3:]
+                made.insert(0,ans)
+
         print(time.strftime("[%x %X] ")+"Tags: "+str(made))
-        randURL = 'https://danbooru.donmai.us/posts/random?tags=idolmaster'
+        randURL = 'https://danbooru.donmai.us/posts/random?tags='
         count = 1
         for dec in made:
             if count == 4:
                 break
-            randURL += "+"+urllib.quote(dec.replace(" ","_"))
+            randURL += urllib.quote(dec.replace(" ","_"))+"+"
     else:
-        randURL = 'https://danbooru.donmai.us/posts/random?tags=idolmaster'
+        randURL = 'https://danbooru.donmai.us/posts/random?tags='
     count = 20
     while True:
         if count == 0:
