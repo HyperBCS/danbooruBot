@@ -9,7 +9,7 @@ from TwitterAPI import TwitterAPI
 from TwitterAPI.TwitterError import *
 
 try:
-    f = open('keys.cfg');
+    f = open('config.cfg');
     config = ConfigParser.ConfigParser()
     config.readfp(f)
     twitter = config._sections["Twitter"]
@@ -106,7 +106,7 @@ while True:
     print(time.strftime("[%x %X] ")+"Starting twitter bot...")
     names = {}
     try:
-        r = api.request('statuses/filter', {'track': '@minerhost'})
+        r = api.request('statuses/filter', {'track': '@'+twitter['handle']})
         for status in r:
             if 'text' in status:
                 print(time.strftime("[%x %X] ")+"New request from: "+status['user']['screen_name'])
