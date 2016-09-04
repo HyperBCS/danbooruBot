@@ -1,0 +1,10 @@
+[Twitter]
+consumer_key = <Twitter consumer Key>
+consumer_secret = <Twitter consumer secret>
+access_token_key = <Twitter token key>
+access_token_secret = <Twitter token secret>
+handle = <twitter handle>
+
+[danbooru]
+login = <danbooru login name>
+api_key = <danbooru api_key>
