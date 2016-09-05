@@ -69,7 +69,7 @@ def pic_opt(choices, status, names):
     if len(choices) != 0:
         made = [x.strip() for x in choices[0].split(',')]
 
-        arg = re.compile(r'-[k-ki-it-t] ')
+        arg = re.compile(r'-[a-z] ')
         if arg.search(made[0].lower()):
             ans = series(made[0][0:2])
             if ans != None:
