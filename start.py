@@ -36,7 +36,7 @@ def series(word):
         return 'idolmaster'
     elif word == '-t':
         return 'touhou'
-    elif word == '-g'
+    elif word == '-g':
         return 'gochiusa'
     else:
         return None
