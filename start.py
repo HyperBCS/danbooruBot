@@ -86,6 +86,7 @@ def pic_opt(choices, status, names):
     else:
         randURL = 'https://danbooru.donmai.us/posts/random?tags='
     count = 20
+    max_post = [None,-1,0]
     while True:
         if count == 0:
             raise
@@ -94,9 +95,22 @@ def pic_opt(choices, status, names):
         src =re.search('(?<=posts/).*\?',response.url).group(0).replace("?","")
         url = 'https://danbooru.donmai.us/posts/'+src+".json"
         r = requests.get(url, params=payload).json()
-        if r['rating'] != "s" or int(r['score'])<7 :
+        if r['rating'] != "s":
             print(time.strftime("[%x %X] ")+"NSFW: "+src)
             count = count - 1
+            continue
+        elif int(r['score'])<7:
+            print(time.strftime("[%x %X] ")+"Score of "+str(r['score'])+" : "+src)
+            if r['score'] > max_post[1]:
+                max_post[0] = r
+                max_post[1] = r['score']
+                max_post[2] = src
+            count = count - 1
+            if count == 0:
+                r = max_post[0]
+                src = max_post[2]
+                print(time.strftime("[%x %X] ")+"SFW: "+max_post[2])
+                break
             continue
         else:
             if reroll == False:
