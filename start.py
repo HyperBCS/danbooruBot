@@ -43,12 +43,20 @@ def series(word):
 
 
 def choose_opt(choices, status):
+    if len(choices) < 2:
+        print(time.strftime("[%x %X] ")+"Error: No choices given")
+        return
     del choices[0]
     if len(choices) != 0:
-        made = [x.strip() for x in choices[0].split(',')]
+        made= [x.strip() for x in choices[0].split(',')]
         print(time.strftime("[%x %X] ")+"Choices: "+str(made))
+        for item in made[:]:
+            if '@' in item:
+                made.remove(item)
         choices = made
         length = len(choices)
+        if(length < 1):
+            return
         choice = choices[random.randint(0, length-1)]
         print(time.strftime("[%x %X] ")+"Reply: "+str(choice))
         fin_status = "@"+str(status['user']['screen_name'])+" I suggest you "+choice
