@@ -1,12 +1,13 @@
 import random
 import urllib
 import re
+import io
 import requests
 import json
+import traceback
 import time
 import ConfigParser, os
-from TwitterAPI import TwitterAPI
-from TwitterAPI.TwitterError import *
+import twitter as TwitterAPI
 
 try:
     f = open('config.cfg');
@@ -17,7 +18,10 @@ try:
 except:
     print("Invalid config")
 
-api = TwitterAPI(twitter['consumer_key'], twitter['consumer_secret'], twitter['access_token_key'], twitter['access_token_secret'])
+api = TwitterAPI.Api(consumer_key=twitter['consumer_key'],
+                  consumer_secret=twitter['consumer_secret'],
+                  access_token_key=twitter['access_token_key'],
+                  access_token_secret=twitter['access_token_secret'])
 
 def trim(user, name, imgL):
     fin = ""
@@ -52,7 +56,8 @@ def choose_opt(choices, status):
         print(time.strftime("[%x %X] ")+"Choices: "+str(made))
         for item in made[:]:
             if '@' in item:
-                made.remove(item)
+                if ' ' not in item:
+                    made.remove(item)
         choices = made
         length = len(choices)
         if(length < 1):
@@ -60,7 +65,7 @@ def choose_opt(choices, status):
         choice = choices[random.randint(0, length-1)]
         print(time.strftime("[%x %X] ")+"Reply: "+str(choice))
         fin_status = "@"+str(status['user']['screen_name'])+" I suggest you "+choice
-        r = api.request('statuses/update', {'status':fin_status[:140], 'in_reply_to_status_id': status['id_str']})
+        r = api.PostUpdate(fin_status[:140], in_reply_to_status_id = status['id_str'])
         print(time.strftime("[%x %X] ")+"Successfully tweeted reply!")
 
 def pic_opt(choices, status, names):
@@ -132,25 +137,24 @@ def pic_opt(choices, status, names):
     img = "https://danbooru.donmai.us"+r['file_url']
     name = " "+r['tag_string_character'].replace(" ",", ").replace("_", " ")
     imgL = "https://danbooru.donmai.us/posts/"+src
-    file = urllib.urlopen(img)
-    data = file.read()
-    fin_status = trim(str(status['user']['screen_name']),name,imgL)
-    r = api.request('media/upload', None, {'media': data})
-    if r.status_code == 200:
-        media_id = r.json()['media_id']
-        r = api.request(
-            'statuses/update', {'status':fin_status, 'media_ids': media_id, 'in_reply_to_status_id':status['id_str']})
-        print(time.strftime("[%x %X] ")+"Successfully tweeted reply!")
-    else:
-        print(time.strftime("[%x %X] ")+"An error occured while uploading media...")
+    try:
+        file = requests.get(img)
+        data = file.content
+        fin_status = trim(str(status['user']['screen_name']),name,imgL)
+        r = api.PostMedia(fin_status, in_reply_to_status_id = status['id_str'], media=io.BytesIO(data))
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+        raise
+    print(time.strftime("[%x %X] ")+"Successfully tweeted reply!")
 
 while True:
     print(time.strftime("[%x %X] ")+"Starting twitter bot...")
     names = {}
     try:
-        r = api.request('statuses/filter', {'track': '@'+twitter['handle']})
+        r = api.GetStreamFilter(follow=[twitter['handle']])
         for status in r:
-            if 'text' in status:
+            if 'text' in status and str(status['user']['id']) != twitter['handle']:
                 print(time.strftime("[%x %X] ")+"New request from: "+status['user']['screen_name'])
                 choices = status['text'].encode('utf-8').split(' ',2)
                 del choices[0]
@@ -165,7 +169,7 @@ while True:
                         pic_opt(choices, status, names)
                 except:
                     print(time.strftime("[%x %X] ")+"An error occured or there are no pictures found...")
-                    r = api.request('statuses/update', {'status':"@"+str(status['user']['screen_name'])+" No pictures found.", 'in_reply_to_status_id':status['id_str']})
+                    r = api.PostUpdate("@"+str(status['user']['screen_name'])+" No pictures found." , in_reply_to_status_id = status['id_str'])
             elif 'disconnect' in status:
                 event = status['disconnect']
                 if event['code'] in [2,5,6,7]:
@@ -174,13 +178,9 @@ while True:
                 else:
                     # temporary interruption, re-try request
                     break
-    except TwitterRequestError as e:
-        if e.status_code < 500:
-            # something needs to be fixed before re-connecting
-            raise
-        else:
-            # temporary interruption, re-try request
-            pass
-    except TwitterConnectionError:
+    except Exception as e:
+        print(e)
+        raise
+    except:
         # temporary interruption, re-try request
         pass
