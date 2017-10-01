@@ -1,20 +1,23 @@
 import random
-import urllib
+import urllib.parse
 import re
 import io
 import requests
 import json
 import traceback
 import time
-import ConfigParser, os
+import configparser, os
 import twitter as TwitterAPI
 
 try:
     f = open('config.cfg');
-    config = ConfigParser.ConfigParser()
+    config = configparser.ConfigParser()
     config.readfp(f)
     twitter = config._sections["Twitter"]
+    yelp = config._sections["Yelp"]
     danbooru = config._sections["danbooru"]
+
+    
 except:
     print("Invalid config")
 
@@ -95,9 +98,11 @@ def pic_opt(choices, status, names):
         for dec in made:
             if count == 4:
                 break
-            randURL += urllib.quote(dec.replace(" ","_"))+"+"
+            randURL += urllib.parse.quote(dec.replace(" ","_"))+"+"
+        print(randURL)
     else:
         randURL = 'https://danbooru.donmai.us/posts/random?tags='
+        print(randURL)
     count = 20
     max_post = [None,-1,0]
     while True:
@@ -148,6 +153,11 @@ def pic_opt(choices, status, names):
         raise
     print(time.strftime("[%x %X] ")+"Successfully tweeted reply!")
 
+def food_opt(choices, status, names):
+    return None
+
+
+
 while True:
     print(time.strftime("[%x %X] ")+"Starting twitter bot...")
     names = {}
@@ -156,13 +166,13 @@ while True:
         for status in r:
             if 'text' in status and str(status['user']['id']) != twitter['handle']:
                 print(time.strftime("[%x %X] ")+"New request from: "+status['user']['screen_name'])
-                choices = status['text'].encode('utf-8').split(' ',2)
+                choices = status['text'].split(' ', 2)
                 del choices[0]
                 try:
                     if choices[0].lower() == "!choose":
                         choose_opt(choices, status)
                 except:
-                    print(time.strftime("[%x %X] ")+"Invalid request: "+status['text'].encode('utf-8'))
+                    print(time.strftime("[%x %X] ")+"Invalid request: "+status['text'])
                     continue
                 try:
                     if choices[0].lower() == "!pic" or choices[0].lower() == "!reroll":
@@ -170,6 +180,23 @@ while True:
                 except:
                     print(time.strftime("[%x %X] ")+"An error occured or there are no pictures found...")
                     r = api.PostUpdate("@"+str(status['user']['screen_name'])+" No pictures found." , in_reply_to_status_id = status['id_str'])
+
+                """
+                YELP food rec parser here!
+                """
+
+                try:
+                    if choices[0].lower() == "!food":
+                        food_opt(choices, status, names)
+                        print("Nothing Happens.")
+                except:
+                    print(time.strftime("[%x %X] ")+"Invalid request: "+status['text'])
+                    continue
+
+                """
+                END OF PARSER
+                """
+
             elif 'disconnect' in status:
                 event = status['disconnect']
                 if event['code'] in [2,5,6,7]:
