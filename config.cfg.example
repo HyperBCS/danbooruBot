@@ -5,6 +5,10 @@ access_token_key = <Twitter token key>
 access_token_secret = <Twitter token secret>
 handle = <twitter handle>
 
+[Yelp]
+client_id = <Yelp Client ID>
+client_secret = <Yelp Client Secret>
+
 [danbooru]
 login = <danbooru login name>
 api_key = <danbooru api_key>
