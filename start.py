@@ -41,9 +41,8 @@ def createReference():
         ref[key] = 'rating'
     return ref
 
-CLIENT_ID = yelp['client_id']
-CLIENT_SECRET = yelp['client_secret']
-yelp_api = YelpAPI(CLIENT_ID, CLIENT_SECRET)
+YELP_API_KEY = yelp['api_key']
+yelp_api = YelpAPI(YELP_API_KEY)
 related_words = createReference()
 
 def trim(user, name, imgL):
@@ -275,9 +274,6 @@ def main():
                         break
         except Exception as e:
             print(e)
-            raise
-        except:
-            # temporary interruption, re-try request
             pass
 
 if __name__ == '__main__':
